@@ -21,12 +21,15 @@ func main() {
 		return
 	}
 
+	// DeleteBucket function deletes a bucket.
+	DeleteBucket(sess, "aws-sample-bucket-1")
+
 	// ListBuckets function lists the buckets in your account.
 	buckets, _ := ListBuckets(sess)
 	fmt.Println("buckets: ", buckets)
 
 	// CreateBucket Creates an S3 Bucket in the region configured in the shared config
-	// CreateBucket(sess, "aws-sample-bucket-1")
+	CreateBucket(sess, "aws-sample-bucket-1")
 
 	// UploadFile function uploads an object to a bucket.
 	UploadFile(sess, "iam-store", "serverless.yml")
@@ -91,6 +94,25 @@ func CreateBucket(sess *session.Session, bucket string) {
 	}
 
 	fmt.Printf("Bucket %q successfully created\n", bucket)
+}
+
+// DeleteBucket function deletes a bucket.
+func DeleteBucket(sess *session.Session, bucket string) error {
+	svc := s3.New(sess)
+
+	_, err := svc.DeleteBucket(&s3.DeleteBucketInput{
+		Bucket: aws.String(bucket),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	err = svc.WaitUntilBucketExists(&s3.HeadBucketInput{
+		Bucket: aws.String(bucket),
+	})
+
+	return err
 }
 
 // ListObjects function lists the items in a bucket
